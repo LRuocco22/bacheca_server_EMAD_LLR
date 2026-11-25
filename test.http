@@ -1,0 +1,79 @@
+@base = http://localhost:8080
+
+### 0. Il server risponde?
+GET {{base}}/api/health
+
+### 1. Registrazione azienda (R1) — la seconda volta risponde 409
+POST {{base}}/api/auth/register
+Content-Type: application/json
+
+{"nome": "Acme Srl", "email": "hr@acme.it", "password": "segreta123"}
+
+### 2. Login (R2) — INVIA SEMPRE PRIMA QUESTA
+# @name login
+POST {{base}}/api/auth/login
+Content-Type: application/json
+
+{"email": "hr@acme.it", "password": "segreta123"}
+
+### 3. Pubblica un annuncio (R4)
+POST {{base}}/api/annunci
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{"titolo": "Sviluppatore Flutter junior", "descrizione": "Cerchiamo una persona motivata per sviluppare app mobili. Sede a Milano, lavoro ibrido."}
+
+### 4. Pubblica SENZA login (deve rispondere 401)
+POST {{base}}/api/annunci
+Content-Type: application/json
+
+{"titolo": "Prova", "descrizione": "Annuncio di prova senza login"}
+
+### 5. Bacheca pubblica (R5)
+GET {{base}}/api/annunci
+
+### 6. Dettaglio di un annuncio (R5) — l'annuncio appena creato è il 3
+GET {{base}}/api/annunci/3
+
+### 7. Candidatura con CV all'annuncio 3 (R6, senza login)
+POST {{base}}/api/annunci/3/candidature
+Content-Type: multipart/form-data; boundary=CONFINE
+
+--CONFINE
+Content-Disposition: form-data; name="nome"
+
+Mario
+--CONFINE
+Content-Disposition: form-data; name="cognome"
+
+Rossi
+--CONFINE
+Content-Disposition: form-data; name="email"
+
+mario.rossi@example.com
+--CONFINE
+Content-Disposition: form-data; name="cv"; filename="cv.pdf"
+Content-Type: application/pdf
+
+< ./cv.pdf
+--CONFINE--
+
+### 8. I miei annunci (R7)
+GET {{base}}/api/azienda/annunci
+Authorization: Bearer {{login.response.body.token}}
+
+### 9. Candidature ricevute per l'annuncio 3 (R7)
+GET {{base}}/api/azienda/annunci/3/candidature
+Authorization: Bearer {{login.response.body.token}}
+
+### 10. Apri il CV della candidatura 1 (R7)
+GET {{base}}/api/candidature/1/cv
+Authorization: Bearer {{login.response.body.token}}
+
+### 11. Logout (R3)
+POST {{base}}/api/auth/logout
+Authorization: Bearer {{login.response.body.token}}
+
+### 12. Dopo il logout l'area riservata non è più accessibile (401)
+GET {{base}}/api/azienda/annunci
+Authorization: Bearer {{login.response.body.token}}

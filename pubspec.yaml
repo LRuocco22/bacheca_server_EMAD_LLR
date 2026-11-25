@@ -1,0 +1,15 @@
+name: bacheca_server
+description: Back-end REST della bacheca di annunci di lavoro.
+version: 1.0.0
+publish_to: none
+
+environment:
+  sdk: ^3.0.0
+
+# Le versioni vengono risolte da "dart pub get" (equivalente a "dart pub add ...")
+# shelf_multipart serve solo per ricevere il file del curriculum (multipart/form-data).
+dependencies:
+  shelf: any
+  shelf_router: any
+  crypto: any
+  shelf_multipart: any
